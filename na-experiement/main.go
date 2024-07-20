@@ -2,28 +2,24 @@ package main
 
 import (
 	"fmt"
-	"sync"
-	"time"
+	"net/http"
 )
 
-func worker(task int) {
-	fmt.Printf("Worker is working on task %d\n", task)
-	time.Sleep(time.Second)
+func GreetHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("this is a greet handler")
+	w.Write([]byte("Hello, World!"))
+}
+
+func TimeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("this is a time handler")
+	w.Write([]byte("The time is 12:00"))
 }
 
 func main() {
-	var wg sync.WaitGroup
-	
-	for i := 0; i < 5; i++ {
-		wg.Add(1) // Start job increase 1
-		i := i
+	mux := http.NewServeMux()
 
-		go func() {
-			defer wg.Done() // If this function is done -> decrease 1
-			worker(i)
-		}()
+	mux.HandleFunc("/greet", GreetHandler)
+	mux.HandleFunc("/greet/deep", TimeHandler)
 
-		wg.Wait() // Wait until zero
-	}
-
+	http.ListenAndServe(":8080", mux)
 }
